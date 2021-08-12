@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import BookShelf from "./Shelf";
 import { Link } from "react-router-dom";
 class ListBooks extends Component {
-  state = {};
   render() {
     const { books, updateShelf } = this.props;
     return (

@@ -1,14 +1,22 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import * as BooksAPI from "./BooksAPI";
 
 class SearchBooks extends Component {
   state = {
     query: "",
+    search: [],
+    error: "",
   };
-  updateQuery = (query) => {
-    this.setState(() => ({
-      query: query.trim(),
-    }));
+  searchQuery = (query) => {
+    this.setState({ query }, () => {
+      if (query !== "") {
+        const trimedQuery = query.trim();
+        BooksAPI.search(trimedQuery).then((search) => {
+          this.setState(() => ({ search }));
+        });
+      }
+    });
   };
   clearQuery = () => {
     this.updateQuery("");
@@ -18,14 +26,8 @@ class SearchBooks extends Component {
     this.props.history.push("/");
   };
   render() {
-    const { query } = this.state;
-    const { books } = this.props;
-    const showingBooks =
-      query === ""
-        ? books
-        : books.filter((c) =>
-            c.title.toLowerCase().includes(query.toLowerCase())
-          );
+    const { query, search } = this.state;
+
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -37,7 +39,7 @@ class SearchBooks extends Component {
               type="text"
               placeholder="Search by title or author"
               value={query}
-              onChange={(event) => this.updateQuery(event.target.value)}
+              onChange={(event) => this.searchQuery(event.target.value)}
             />
           </div>
         </div>
@@ -45,48 +47,54 @@ class SearchBooks extends Component {
           <ol className="books-grid">
             {query === ""
               ? null
-              : showingBooks.map((book) => {
-                  return (
-                    <li key={book.id}>
-                      <div className="book">
-                        <div className="book-top">
-                          <div
-                            className="book-cover"
-                            style={{
-                              width: 128,
-                              height: 193,
-                              backgroundImage: `url(${
-                                book.imageLinks.thumbnail
-                              })`,
-                            }}
-                          />
-                          <div className="book-shelf-changer">
-                            <select
-                              value={book.shelf}
-                              onChange={(e) => {
-                                this.moveBook(e, book);
+              : search.error === ""
+              ? search
+                  .filter((s) =>
+                    s.title.toLowerCase().includes(query.toLowerCase())
+                  )
+                  .map((book) => {
+                    return (
+                      <li key={book.id}>
+                        <div className="book">
+                          <div className="book-top">
+                            <div
+                              className="book-cover"
+                              style={{
+                                width: 128,
+                                height: 193,
+                                backgroundImage: `url(${
+                                  book.imageLinks.thumbnail
+                                })`,
                               }}
-                            >
-                              <option value="move" disabled>
-                                Move to...
-                              </option>
-                              <option value="currentlyReading">
-                                Currently Reading
-                              </option>
-                              <option value="wantToRead">Want to Read</option>
-                              <option value="read">Read</option>
-                              <option value="none">None</option>
-                            </select>
+                            />
+                            <div className="book-shelf-changer">
+                              <select
+                                value={book.shelf}
+                                onChange={(e) => {
+                                  this.moveBook(e, book);
+                                }}
+                              >
+                                <option value="move" disabled>
+                                  Move to...
+                                </option>
+                                <option value="currentlyReading">
+                                  Currently Reading
+                                </option>
+                                <option value="wantToRead">Want to Read</option>
+                                <option value="read">Read</option>
+                                <option value="none">None</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="book-title">{book.title}</div>
+                          <div className="book-authors">
+                            {book.authors.map((author) => author)}
                           </div>
                         </div>
-                        <div className="book-title">{book.title}</div>
-                        <div className="book-authors">
-                          {book.authors.map((author) => author)}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
+                      </li>
+                    );
+                  })
+              : search.error}
           </ol>
         </div>
       </div>
