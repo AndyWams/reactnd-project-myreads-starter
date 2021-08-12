@@ -28,7 +28,6 @@ class BooksApp extends React.Component {
     const { books } = this.state;
     return (
       <div className="app">
-        {/* <Route path="/" exact render={() => <ListBooks books={books} updateShelf={this.updateShelf} />} /> */}
         <Route path="/" exact>
           <ListBooks books={books} updateShelf={this.updateShelf} />
         </Route>

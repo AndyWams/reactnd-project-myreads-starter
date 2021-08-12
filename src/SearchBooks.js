@@ -6,7 +6,6 @@ class SearchBooks extends Component {
   state = {
     query: "",
     search: [],
-    error: "",
   };
   searchQuery = (query) => {
     this.setState({ query }, () => {
@@ -18,9 +17,7 @@ class SearchBooks extends Component {
       }
     });
   };
-  clearQuery = () => {
-    this.updateQuery("");
-  };
+
   moveBook = (e, book) => {
     this.props.updateShelf(e.target.value, book);
     this.props.history.push("/");
@@ -47,8 +44,7 @@ class SearchBooks extends Component {
           <ol className="books-grid">
             {query === ""
               ? null
-              : search.error === ""
-              ? search
+              : search
                   .filter((s) =>
                     s.title.toLowerCase().includes(query.toLowerCase())
                   )
@@ -93,8 +89,7 @@ class SearchBooks extends Component {
                         </div>
                       </li>
                     );
-                  })
-              : search.error}
+                  })}
           </ol>
         </div>
       </div>
