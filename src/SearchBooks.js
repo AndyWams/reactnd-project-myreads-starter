@@ -10,9 +10,8 @@ class SearchBooks extends Component {
   };
 
   searchQuery = (query) => {
-    this.setState({ query }, () => {
-      this.debouncedSearchQuery(query);
-    });
+    this.setState({ query });
+    this.debouncedSearchQuery(query);
   };
   debouncedSearchQuery = debounce(300, false, (query) => {
     if (query.length > 0) {
