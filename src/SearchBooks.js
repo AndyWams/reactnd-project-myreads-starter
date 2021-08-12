@@ -1,31 +1,52 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import * as BooksAPI from "./BooksAPI";
+import { debounce } from "throttle-debounce";
 
 class SearchBooks extends Component {
   state = {
     query: "",
-    books: [],
+    searchBooks: [],
   };
-  searchQuery = (query) => {
+
+  searchQuery = debounce(300, false, (query) => {
     this.setState({ query }, () => {
-      if (query !== "") {
-        const trimedQuery = query.trim();
-        BooksAPI.search(trimedQuery).then((search) => {
-          this.setState(() => ({
-            books: search,
-          }));
+      if (query.length > 0) {
+        BooksAPI.search(query).then((books) => {
+          if (books.error) {
+            this.setState({ searchBooks: [] });
+          } else {
+            this.setState({ searchBooks: books });
+          }
         });
+      } else {
+        this.setState({ searchBooks: [] });
       }
     });
-  };
+  });
 
   moveBook = (e, book) => {
     this.props.updateShelf(e.target.value, book);
     this.props.history.push("/");
   };
   render() {
-    const { query, books } = this.state;
+    const { query, searchBooks } = this.state;
+    const { books } = this.props;
+
+    let verifiedBooks = [];
+    if (books.length > 0) {
+      verifiedBooks = searchBooks.map((book) => {
+        books.forEach((bookOnShelf) => {
+          // check wether book is already on shelf
+          if (book.id === bookOnShelf.id) {
+            // if yes get the shelf data from BooksOnShelf
+            book.shelf = bookOnShelf.shelf;
+          }
+        });
+
+        return book;
+      });
+    }
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -45,7 +66,7 @@ class SearchBooks extends Component {
           <ol className="books-grid">
             {query === ""
               ? null
-              : books
+              : verifiedBooks
                   .filter((q) =>
                     q.title.toLowerCase().includes(query.toLowerCase())
                   )
@@ -59,14 +80,13 @@ class SearchBooks extends Component {
                               style={{
                                 width: 128,
                                 height: 193,
-                                backgroundImage: `url(${
-                                  book.imageLinks.thumbnail
-                                })`,
+                                backgroundImage: `url(${book.imageLinks &&
+                                  book.imageLinks.thumbnail})`,
                               }}
                             />
                             <div className="book-shelf-changer">
                               <select
-                                value={book.shelf}
+                                value={book.shelf ? book.shelf : "none"}
                                 onChange={(e) => {
                                   this.moveBook(e, book);
                                 }}
@@ -85,7 +105,7 @@ class SearchBooks extends Component {
                           </div>
                           <div className="book-title">{book.title}</div>
                           <div className="book-authors">
-                            {book.authors.map((author) => author)}
+                            {book.authors && book.authors.join(", ")}
                           </div>
                         </div>
                       </li>
