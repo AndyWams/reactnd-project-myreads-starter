@@ -9,20 +9,23 @@ class SearchBooks extends Component {
     searchBooks: [],
   };
 
-  searchQuery = debounce(300, false, (query) => {
+  searchQuery = (query) => {
     this.setState({ query }, () => {
-      if (query.length > 0) {
-        BooksAPI.search(query).then((books) => {
-          if (books.error) {
-            this.setState({ searchBooks: [] });
-          } else {
-            this.setState({ searchBooks: books });
-          }
-        });
-      } else {
-        this.setState({ searchBooks: [] });
-      }
+      this.debouncedSearchQuery(query);
     });
+  };
+  debouncedSearchQuery = debounce(300, false, (query) => {
+    if (query.length > 0) {
+      BooksAPI.search(query).then((books) => {
+        if (books.error) {
+          this.setState({ searchBooks: [] });
+        } else {
+          this.setState({ searchBooks: books });
+        }
+      });
+    } else {
+      this.setState({ searchBooks: [] });
+    }
   });
 
   moveBook = (e, book) => {
