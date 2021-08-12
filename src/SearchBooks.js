@@ -5,14 +5,16 @@ import * as BooksAPI from "./BooksAPI";
 class SearchBooks extends Component {
   state = {
     query: "",
-    search: [],
+    books: [],
   };
   searchQuery = (query) => {
     this.setState({ query }, () => {
       if (query !== "") {
         const trimedQuery = query.trim();
         BooksAPI.search(trimedQuery).then((search) => {
-          this.setState(() => ({ search }));
+          this.setState(() => ({
+            books: search,
+          }));
         });
       }
     });
@@ -23,7 +25,8 @@ class SearchBooks extends Component {
     this.props.history.push("/");
   };
   render() {
-    const { query, search } = this.state;
+    const { query, books } = this.state;
+    // const { books } = this.props;
 
     return (
       <div className="search-books">
@@ -44,9 +47,9 @@ class SearchBooks extends Component {
           <ol className="books-grid">
             {query === ""
               ? null
-              : search
-                  .filter((s) =>
-                    s.title.toLowerCase().includes(query.toLowerCase())
+              : books
+                  .filter((q) =>
+                    q.title.toLowerCase().includes(query.toLowerCase())
                   )
                   .map((book) => {
                     return (
